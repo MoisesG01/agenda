@@ -1,15 +1,34 @@
-import express from 'express';
-import userRouter from '@presentation/routes/userRoutes';
-import dotenv from 'dotenv';
+import express from "express";
+import dotenv from "dotenv";
+import { Database } from "@infrastructure/config/Database";
 
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT;
+async function startApp() {
+  await Database.init();
+  console.log("Banco de Dados inicializado com sucesso!");
 
-app.use(express.json());
-app.use('/api', userRouter);
+  const app = express();
+  const PORT = process.env.PORT;
 
-app.listen(PORT, () => {
+  app.use(express.json());
+
+  const userRouter = await import("@presentation/routes/userRoutes");
+  app.use("/api", userRouter.default);
+
+  app.listen(PORT, () => {
     console.log(`Application is running on port ${PORT}`);
-});
+  });
+}
+
+startApp();
+
+// const app = express();
+// const PORT = process.env.PORT;
+
+// app.use(express.json());
+// app.use('/api', userRouter);
+
+// app.listen(PORT, () => {
+//     console.log(`Application is running on port ${PORT}`);
+// });

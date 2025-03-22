@@ -1,11 +1,23 @@
 import { Request, Response } from 'express';
-import { CreateUserUseCase } from '@application';
-import { UserRepository } from '@infrastructure';
+import { CreateUserUseCase } from '@application/useCases/CreateUserUseCase';
+import { UserRepository } from '@infrastructure/repositories/UserRepository';
 
 export class UserController {
     private createUserUseCase: CreateUserUseCase;
     
     constructor() {
-        this.createUserUseCase = new CreateUserUseCase(new UserRepository());
+        const userRepository = new UserRepository;
+        this.createUserUseCase = new CreateUserUseCase(userRepository);
+    }
+
+    async createUser(req: Request, res: Response) {
+        try {
+            const { name, email } = req.body;
+            const user = await this.createUserUseCase.execute(name, email);
+            
+            return res.status(201).json(user);
+        } catch (error) {
+            return res.status(400).json({error: (error as Error).message })
+        }
     }
 }
