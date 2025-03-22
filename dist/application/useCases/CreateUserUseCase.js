@@ -9,21 +9,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const UserController_1 = require("@presentation/controllers/UserController");
-const validateDTO_1 = require("@presentation/middlewares/validateDTO");
-const UserDTO_1 = require("@presentation/dtos/UserDTO");
-const router = (0, express_1.Router)();
-const userController = new UserController_1.UserController();
-// router.get('/users', (req, res) => {
-//     res.send('User routes');
-// });
-router.post("/users", (0, validateDTO_1.validateDTO)(UserDTO_1.UserDTO), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield userController.createUser(req, res);
+exports.CreateUserUseCase = void 0;
+const User_1 = require("@domain/entities/User");
+class CreateUserUseCase {
+    constructor(userRepository) {
+        this.userRepository = userRepository;
     }
-    catch (error) {
-        next(error);
+    execute(name, email) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const existingUser = yield this.userRepository.findByEmail(email);
+            if (existingUser) {
+                throw new Error("Já existe um usuário registrado com este e-mail!");
+            }
+            const user = new User_1.User(name, email);
+            return yield this.userRepository.save(user);
+        });
     }
-}));
-exports.default = router;
+}
+exports.CreateUserUseCase = CreateUserUseCase;

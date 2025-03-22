@@ -9,21 +9,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("express");
-const UserController_1 = require("@presentation/controllers/UserController");
-const validateDTO_1 = require("@presentation/middlewares/validateDTO");
-const UserDTO_1 = require("@presentation/dtos/UserDTO");
-const router = (0, express_1.Router)();
-const userController = new UserController_1.UserController();
-// router.get('/users', (req, res) => {
-//     res.send('User routes');
-// });
-router.post("/users", (0, validateDTO_1.validateDTO)(UserDTO_1.UserDTO), (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        yield userController.createUser(req, res);
-    }
-    catch (error) {
-        next(error);
-    }
-}));
-exports.default = router;
+exports.validateDTO = validateDTO;
+const class_transformer_1 = require("class-transformer");
+const class_validator_1 = require("class-validator");
+function validateDTO(dtoClass) {
+    return (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+        const output = (0, class_transformer_1.plainToInstance)(dtoClass, req.body);
+        const errors = yield (0, class_validator_1.validate)(output);
+        if (errors.length > 0) {
+            res.status(322).json({
+                errors: errors.map(err => err.constraints),
+            });
+            return;
+        }
+        req.body = output;
+        next();
+    });
+}
