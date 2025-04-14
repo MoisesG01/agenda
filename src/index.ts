@@ -16,6 +16,9 @@ async function startApp() {
   const userRouter = await import("@presentation/routes/userRoutes");
   app.use("/api", userRouter.default);
 
+  const contatoRoutes = await import("@presentation/routes/contatoRoutes");
+  app.use("/api", contatoRoutes.default);
+
   app.listen(PORT, () => {
     console.log(`Application is running on port ${PORT}`);
   });
