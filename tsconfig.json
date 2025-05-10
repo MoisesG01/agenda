@@ -15,5 +15,6 @@
             "@infrastructure/*": ["infrastructure/*"],
             "@presentation/*": ["presentation/*"]
         }
-    }
+    },
+    "exclude": ["jest.config.ts"]
 }

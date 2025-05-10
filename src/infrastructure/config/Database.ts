@@ -27,4 +27,5 @@ export class Database {
         
         return this.pool;
     }
+    //TODO: Implementar o método de fechamento da conexão
 }
