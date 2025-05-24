@@ -27,5 +27,11 @@ export class Database {
         
         return this.pool;
     }
-    //TODO: Implementar o método de fechamento da conexão
+    
+    public static async close() {
+        if (this.pool) {
+            await this.pool.end();
+            this.pool = null;
+        }
+    }
 }
