@@ -55,4 +55,18 @@ export class UserRepository implements IUserRepository {
     findById(id: number): Promise<User | null> {
         throw new Error("Method not implemented.");
     }
+
+    async deleteById(id: number): Promise<boolean | null> {
+        try {
+            const [result]: any = await this.pool.execute(
+                "DELETE FROM users WHERE id = ?", 
+                [id]
+            );
+
+            return result.affectedRows > 0;
+        } catch (error) {
+            console.log(`Erro ao deletar o registro (${id}) no banco: ${error}`);
+            throw new Error(`Erro ao deletar o registro (${id}) no banco: ${error}`);
+        }
+    }
 }

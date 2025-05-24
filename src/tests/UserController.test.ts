@@ -58,4 +58,24 @@ describe('UserController (Save, getAll, getById)', () => {
             }),
         ]));
     });
+
+    it('deve excluir o usuário de teste', async () => {
+        const user = await userRepository.findByEmail('teste@email.com');
+
+        expect(user).toBeDefined();
+
+        if (!user?.id) {
+            throw new Error('UserId não encontrado');
+        }
+
+        const deleted = await userRepository.deleteById(user.id);
+        expect(deleted).toBe(true);
+    });
 });
+
+/* Atividade 
+   1. Criar testes unitarios para os fluxos:
+     - Criar contato;
+       --> Após criar e validar, o regitro deve ser removido do banco via teste especifico;
+     - Trazer os contatos do usuário. 
+*/
