@@ -31,4 +31,19 @@ export class ContatoRepository implements IContatoRepository {
     );
     return result;
   }
+
+  async deleteContatoByName(name: string): Promise<boolean | null> {
+    try {
+      const [result]: any = await this.pool.execute(
+      `DELETE c.* FROM contatos c
+             INNER JOIN users u ON u.id = c.id_usuario
+             WHERE u.name = ?`,
+      [name]
+    );
+    return result.affectedRows > 0;
+    } catch (error) {
+      console.error(`Erro ao deletar contato (${name}): ${error}`);
+      throw new Error(`Erro ao deletar contato (${name}): ${error}`);
+    }
+  }
 }

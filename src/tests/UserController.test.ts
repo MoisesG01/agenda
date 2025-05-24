@@ -14,7 +14,9 @@ describe('UserController (Save, getAll, getById)', () => {
         userController = new UserController();
     });
 
-    //TODO: implementar o afterAll para fechar a conexão com o banco de dados
+    afterAll(async () => {
+        await Database.close();
+    });
 
     it('deve criar um usuário e persistir no banco de dados', async () => {
         const req = {
