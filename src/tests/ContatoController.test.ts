@@ -58,3 +58,6 @@ describe("ContatoController - Fluxos principais", () => {
     expect(deletado).toBe(true);
   });
 });
+
+//Subir o container: docker-compose up -d
+// Comando para rodas os testes no docker: docker-compose up test

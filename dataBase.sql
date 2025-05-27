@@ -11,8 +11,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS contatos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
-    telefone_celular VARCHAR(9) NOT NULL,
-    telefone_recado VARCHAR(9),
+    telefone_celular VARCHAR(20) NOT NULL,
+    telefone_recado VARCHAR(20),
     email VARCHAR(50) UNIQUE NOT NULL,
     endereco VARCHAR(100) NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES users(id)

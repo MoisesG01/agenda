@@ -13,6 +13,11 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./dataBase.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -38,6 +43,21 @@ services:
       DB_PASSWORD: root
       DB_NAME: agenda_db
       PORT: 3000
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: agenda-api-test
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_NAME: agenda_db
+      DB_PORT: 3306
+    command: npm test
 
 volumes:
   mysql_data:
