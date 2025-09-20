@@ -30,25 +30,33 @@ jobs:
           tenant-id: ${{ secrets.CONTAINER_AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.CONTAINER_AZURE_SUBSCRIPTION_ID }}
 
-      - name: Create ACR if not exists
+      - name: Try to setup ACR
+        id: setup-acr
         run: |
-          echo "Checking if ACR exists..."
-          if az acr show --name agendaacr --resource-group DefaultResourceGroup-MXC >/dev/null 2>&1; then
-            echo "ACR agendaacr already exists"
+          echo "Attempting to setup ACR..."
+          if az provider register --namespace Microsoft.ContainerRegistry --wait; then
+            echo "Provider registered successfully"
+            if az acr show --name agendaacr --resource-group DefaultResourceGroup-MXC >/dev/null 2>&1; then
+              echo "ACR agendaacr already exists"
+              echo "ACR_AVAILABLE=true" >> $GITHUB_OUTPUT
+            else
+              echo "Creating ACR agendaacr..."
+              if az acr create --resource-group DefaultResourceGroup-MXC --name agendaacr --sku Basic --admin-enabled true; then
+                echo "ACR created successfully"
+                echo "ACR_AVAILABLE=true" >> $GITHUB_OUTPUT
+              else
+                echo "Failed to create ACR"
+                echo "ACR_AVAILABLE=false" >> $GITHUB_OUTPUT
+              fi
+            fi
           else
-            echo "Creating ACR agendaacr..."
-            az acr create --resource-group DefaultResourceGroup-MXC --name agendaacr --sku Basic --admin-enabled true
-            echo "ACR created successfully"
+            echo "Failed to register provider, ACR not available"
+            echo "ACR_AVAILABLE=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Verify ACR exists
-        run: |
-          echo "Verifying ACR exists..."
-          az acr show --name agendaacr --resource-group DefaultResourceGroup-MXC
-          echo "ACR verification successful"
-
-      - name: Get ACR credentials
+      - name: Get ACR credentials (if available)
         id: acr-credentials
+        if: steps.setup-acr.outputs.ACR_AVAILABLE == 'true'
         run: |
           echo "Getting ACR credentials..."
           ACR_USERNAME=$(az acr credential show --name agendaacr --query username --output tsv)
@@ -57,7 +65,8 @@ jobs:
           echo "ACR_PASSWORD=$ACR_PASSWORD" >> $GITHUB_OUTPUT
           echo "ACR credentials obtained successfully"
 
-      - name: Build and deploy to Container App
+      - name: Build and deploy to Container App (with ACR)
+        if: steps.setup-acr.outputs.ACR_AVAILABLE == 'true'
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
@@ -69,4 +78,15 @@ jobs:
           resourceGroup: DefaultResourceGroup-MXC
           containerAppEnvironment: managedEnvironment-DefaultResource-9b05
           imageToBuild: agendaacr.azurecr.io/container:${{ github.sha }}
+          targetPort: 3000
+
+      - name: Build and deploy to Container App (without ACR)
+        if: steps.setup-acr.outputs.ACR_AVAILABLE == 'false'
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          dockerfilePath: ./Dockerfile
+          containerAppName: container
+          resourceGroup: DefaultResourceGroup-MXC
+          containerAppEnvironment: managedEnvironment-DefaultResource-9b05
           targetPort: 3000
